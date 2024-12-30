@@ -1,0 +1,48 @@
+module Traffic_Light_Controller(
+    input clk,
+    input rst,
+    output reg [2:0] light_M1,
+    output reg [2:0] light_S,
+    output reg [2:0] light_MT,
+    output reg [2:0] light_M2
+);
+    // State encoding
+    parameter  S1 = 3'd0, S2 = 3'd1, S3 = 3'd2, S4 = 3'd3, S5 = 3'd4, S6 = 3'd5;
+
+    // Timing constants (in clock cycles)
+    parameter SEC7 = 7, SEC5 = 5, SEC2 = 2, SEC3 = 3;
+
+    reg [3:0] count;  // Counter for timing
+    reg [2:0] ps;     // Present state
+
+    // State transition logic
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            ps <= S1;
+            count <= 0;
+        end else begin
+            case (ps)
+                S1: if (count < SEC7) count <= count + 1; else begin ps <= S2; count <= 0; end
+                S2: if (count < SEC2) count <= count + 1; else begin ps <= S3; count <= 0; end
+                S3: if (count < SEC5) count <= count + 1; else begin ps <= S4; count <= 0; end
+                S4: if (count < SEC2) count <= count + 1; else begin ps <= S5; count <= 0; end
+                S5: if (count < SEC3) count <= count + 1; else begin ps <= S6; count <= 0; end
+                S6: if (count < SEC2) count <= count + 1; else begin ps <= S1; count <= 0; end
+                default: ps <= S1;
+            endcase
+        end
+    end
+
+    // Output logic
+    always @(ps) begin
+        case (ps)
+            S1: {light_M1, light_M2, light_MT, light_S} <= {3'b001, 3'b001, 3'b100, 3'b100};
+            S2: {light_M1, light_M2, light_MT, light_S} <= {3'b001, 3'b010, 3'b100, 3'b100};
+            S3: {light_M1, light_M2, light_MT, light_S} <= {3'b001, 3'b100, 3'b001, 3'b100};
+            S4: {light_M1, light_M2, light_MT, light_S} <= {3'b010, 3'b100, 3'b010, 3'b100};
+            S5: {light_M1, light_M2, light_MT, light_S} <= {3'b100, 3'b100, 3'b100, 3'b001};
+            S6: {light_M1, light_M2, light_MT, light_S} <= {3'b100, 3'b100, 3'b100, 3'b010};
+            default: {light_M1, light_M2, light_MT, light_S} <= {3'b000, 3'b000, 3'b000, 3'b000};
+        endcase
+    end
+endmodule
