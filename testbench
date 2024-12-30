@@ -1,0 +1,31 @@
+module Traffic_Light_Controller_TB;
+    reg clk, rst;
+    wire [2:0] light_M1, light_S, light_MT, light_M2;
+
+    // Instantiate the DUT
+    Traffic_Light_Controller dut (
+        .clk(clk),
+        .rst(rst),
+        .light_M1(light_M1),
+        .light_S(light_S),
+        .light_MT(light_MT),
+        .light_M2(light_M2)
+    );
+
+    // Clock Generation
+    initial begin
+        clk = 0;
+        forever #5 clk = ~clk;  // 10 time units per clock cycle
+    end
+
+    // Test Sequence
+    initial begin
+        $monitor("Time: %0t | light_M1: %b | light_M2: %b | light_MT: %b | light_S: %b", 
+                 $time, light_M1, light_M2, light_MT, light_S);
+
+        rst = 1;  // Reset the system
+        #10 rst = 0;  // De-assert reset
+        #500;  // Run simulation for some time
+        $finish;  // End simulation
+    end
+endmodule
